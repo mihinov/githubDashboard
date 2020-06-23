@@ -18,13 +18,21 @@ let searchObj = {
 const per_page = 10;
 const debounceTimeVaring = 1000;
 
-const SearchPipe = (settings) => (obs) => obs.pipe(
+const searchLocaleStorage = JSON.parse(localStorage.getItem('searchLocalStorage'));
+if (localStorage.getItem('searchLocalStorage')) {
+    searchObj.page = searchLocaleStorage.page;
+    searchObj.value = searchLocaleStorage.value;
+    search.value = searchLocaleStorage.value;
+}
+
+const SearchPipe = (settings, objBtn) => (obs) => obs.pipe(
     (settings === true) ? distinctUntilChanged() : identity,
     map(e => {
         return search.value;
     }),
     tap((v) => {
         console.clear();
+        result.innerHTML = '';
         if (searchObj.value !== v) {
             searchObj.page = 1;
         }
@@ -43,21 +51,25 @@ const SearchPipe = (settings) => (obs) => obs.pipe(
             }
         })
         .pipe(
-            catchError(err => EMPTY)
+            catchError(err => {
+                logicBtns({error: true});
+                if (objBtn.forward === true) {
+                    searchObj.forward--;
+                }
+                if (objBtn.back === true) {
+                    searchObj.forward++;
+                }
+                return EMPTY;
+            })
         )
     ),
     tap((response) => {
         const total_count = response.response.total_count;
         const per_page_max = Math.ceil(total_count / per_page);
-        if (searchObj.page > 1) {
-            backBtn.disabled = false;
-        }
-        if (searchObj.page !== per_page_max && per_page_max !== 0) {
-            forwardBtn.disabled = false;
-        }
+        logicBtns(false, per_page_max);
         
-        console.log('total_count', total_count);
-        console.log('per_page_max', per_page_max);
+        // console.log('total_count', total_count);
+        // console.log('per_page_max', per_page_max);
         localStorage.setItem('searchLocalStorage', JSON.stringify(searchObj));
     }),
     map(response => response.response.items),
@@ -73,28 +85,13 @@ stream$.subscribe(value => {
     subscribeStream(value);
 });
 
-function subscribeStream(value) {
-    console.log(value);
-}
-
-const searchLocaleStorage = JSON.parse(localStorage.getItem('searchLocalStorage'));
-if (localStorage.getItem('searchLocalStorage')) {
-    searchObj.page = searchLocaleStorage.page;
-}
-
-if (localStorage.getItem('searchLocalStorage')) {
-    const eventInput = new Event('input');
-    search.value = searchLocaleStorage.value;
-    search.dispatchEvent(eventInput);
-}
-
 fromEvent(forwardBtn, 'click')
     .pipe(
         tap(() => {
             searchObj.page++;
             forwardBtn.disabled = true;
         }),
-        SearchPipe(false)
+        SearchPipe(false, {forward: true})
     ).subscribe(v => subscribeStream(v));
 
 fromEvent(backBtn, 'click')
@@ -103,22 +100,64 @@ fromEvent(backBtn, 'click')
             searchObj.page--;
             backBtn.disabled = true;
         }),
-        SearchPipe(false)
+        SearchPipe(false, {back: true})
     ).subscribe(v => subscribeStream(v));
 
-// function formatDate(date) {
+if (localStorage.getItem('searchLocalStorage')) {
+    const eventInput = new Event('input');
+    search.value = searchLocaleStorage.value;
+    search.dispatchEvent(eventInput);
+}
 
-//     var dd = date.getDate();
-//     if (dd < 10) dd = '0' + dd;
+function logicBtns(objError, per_page_max) {
+    if (objError.error === true) {
+        backBtn.disabled = false;
+        forwardBtn.disabled = false;
+        return false;
+    }
+    if (searchObj.page > 1) {
+        backBtn.disabled = false;
+    }
+    if (searchObj.page !== per_page_max && per_page_max !== 0) {
+        forwardBtn.disabled = false;
+    }
+}
+
+function subscribeStream(val) {
+    const user = val.owner;
+    const stargazers_count = val.stargazers_count;
+    const html = `
+        <div class="card">
+            <div class="card-image">
+                <img src="${user.avatar_url}">
+                <span class="card-title">${val.name}</span>
+            </div>
+            <div class="card-action">
+                <a href="${val.html_url}" target="_blank">Открыть github</a>
+            </div>
+        </div>`;
+    
+    console.log(val);
+    const pushed_at = Date.parse(val.pushed_at);
+    const date = formatDate(new Date(pushed_at));
+    console.log(date);
+    result.insertAdjacentHTML('beforeend', html);
+}
+
+
+function formatDate(date) {
+
+    var dd = date.getDate();
+    if (dd < 10) dd = '0' + dd;
   
-//     var mm = date.getMonth() + 1;
-//     if (mm < 10) mm = '0' + mm;
+    var mm = date.getMonth() + 1;
+    if (mm < 10) mm = '0' + mm;
   
-//     var yy = date.getFullYear() % 100;
-//     if (yy < 10) yy = '0' + yy;
+    var yy = date.getFullYear();
+    if (yy < 10) yy = '0' + yy;
   
-//     return dd + '.' + mm + '.' + yy;
-// }
+    return dd + '.' + mm + '.' + yy;
+}
 
 // const stream$ = fromEvent(search, 'input')
 //     .pipe(
@@ -137,16 +176,16 @@ fromEvent(backBtn, 'click')
 //     );
 
 // stream$.subscribe(user => {
-//     const html = `
-//     <div class="card">
-//         <div class="card-image">
-//             <img src="${user.avatar_url}">
-//             <span class="card-title">${user.login}</span>
-//         </div>
-//         <div class="card-action">
-//             <a href="${user.html_url}" target="_blank">Открыть github</a>
-//         </div>
-//     </div>`;
+    // const html = `
+    // <div class="card">
+    //     <div class="card-image">
+    //         <img src="${user.avatar_url}">
+    //         <span class="card-title">${user.login}</span>
+    //     </div>
+    //     <div class="card-action">
+    //         <a href="${user.html_url}" target="_blank">Открыть github</a>
+    //     </div>
+    // </div>`;
 
 //     result.insertAdjacentHTML('beforeend', html);
 // });
