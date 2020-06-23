@@ -34,10 +34,12 @@ module.exports = {
     library: '[name]'
   },
   devServer: {
-    port: 3000
+    port: 3000,
+    open: true
   },
   plugins: [
     ...pages.map(page => {
+      console.log(page);
       return new HtmlWebpackPlugin({
         template: page,
         filename: path.basename(page)
