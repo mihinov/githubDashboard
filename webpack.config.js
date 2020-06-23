@@ -21,7 +21,6 @@ const pathSrc = path.resolve(__dirname, 'src');
 const pages = getFiles(pathSrc)
   .filter((item) => path.extname(item) === '.html');
 
-
 module.exports = {
   context: path.resolve(__dirname, 'src'),
   entry: {
@@ -30,7 +29,7 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: '[name].js',
+    filename: '[name].bundle.js',
     library: '[name]'
   },
   devServer: {
@@ -39,7 +38,6 @@ module.exports = {
   },
   plugins: [
     ...pages.map(page => {
-      console.log(page);
       return new HtmlWebpackPlugin({
         template: page,
         filename: path.basename(page)
