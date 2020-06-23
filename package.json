@@ -1,5 +1,5 @@
 {
-  "name": "rxjs-cc",
+  "name": "gitub-dashboard",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -22,5 +22,13 @@
   },
   "dependencies": {
     "rxjs": "^6.5.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mihinov/githubDashboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mihinov/githubDashboard/issues"
+  },
+  "homepage": "https://github.com/mihinov/githubDashboard#readme"
 }
