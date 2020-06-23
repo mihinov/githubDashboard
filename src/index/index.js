@@ -58,7 +58,6 @@ const SearchPipe = (settings) => (obs) => obs.pipe(
         
         console.log('total_count', total_count);
         console.log('per_page_max', per_page_max);
-        console.log('searchObj.page', searchObj.page);
         localStorage.setItem('searchLocalStorage', JSON.stringify(searchObj));
     }),
     map(response => response.response.items),

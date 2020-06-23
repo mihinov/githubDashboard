@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const getFiles = function (dir, files_){
   files_ = files_ || [];
@@ -29,8 +30,7 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: '[name].bundle.js',
-    library: '[name]'
+    filename: '[name].js'
   },
   devServer: {
     port: 3000,
@@ -40,17 +40,21 @@ module.exports = {
     ...pages.map(page => {
       return new HtmlWebpackPlugin({
         template: page,
-        filename: path.basename(page)
+        filename: path.basename(page),
+        inject: false
       })
     }),
-    new CleanWebpackPlugin()
+    new CleanWebpackPlugin(),
+    new MiniCssExtractPlugin({
+      filename: '[name].css'
+    })
   ],
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       }
-  ]
+    ]
   }
 };
