@@ -123,6 +123,9 @@ function logicBtns(objError, per_page_max) {
     }
 }
 
+import starIcon from './../img/star.svg';
+console.log(starIcon);
+
 function subscribeStream(val) {
     const user = val.owner;
     const stargazers_count = val.stargazers_count;
