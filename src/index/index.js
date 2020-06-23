@@ -123,8 +123,8 @@ function logicBtns(objError, per_page_max) {
     }
 }
 
-import starIcon from './../img/star.svg';
-console.log(starIcon);
+import stargazersIcon from './../img/star.svg';
+console.log(stargazersIcon);
 
 function subscribeStream(val) {
     const user = val.owner;
