@@ -10,13 +10,14 @@ const search = document.getElementById('search');
 const result = document.getElementById('result');
 const backBtn = document.querySelector('.back.btn');
 const forwardBtn = document.querySelector('.forward.btn');
+const btn_paginator_numbers = document.querySelector('.btn-paginator_numbers');
 
 let searchObj = {
     page: 1,
     value: ''
 };
 const per_page = 10;
-const debounceTimeVaring = 1000;
+const debounceTimeVaring = 2000;
 
 const searchLocaleStorage = JSON.parse(localStorage.getItem('searchLocalStorage'));
 if (localStorage.getItem('searchLocalStorage')) {
@@ -25,26 +26,45 @@ if (localStorage.getItem('searchLocalStorage')) {
     search.value = searchLocaleStorage.value;
 }
 
-const SearchPipe = (settings, objBtn) => (obs) => obs.pipe(
+const SearchPipe = (settings) => (obs) => obs.pipe(
     (settings === true) ? distinctUntilChanged() : identity,
     map(e => {
-        return search.value;
+        return {v: search.value, target: e.target};
     }),
-    tap((v) => {
+    tap((objValAndTarget) => {
+        const v = objValAndTarget.v;
+        const target = objValAndTarget.target;
         console.clear();
         result.innerHTML = '';
+
+        const btn_numbers = [...document.querySelectorAll('.btn.btn_number')];
+        btn_numbers.forEach((item) => {
+            item.disabled = true;
+        });
+        
         if (searchObj.value !== v) {
             searchObj.page = 1;
         }
+        searchObj.startValue = searchObj.value;
         searchObj.value = v;
+        if (searchObj.startValue !== searchObj.value) {
+            btn_paginator_numbers.innerHTML = '';
+        }
         backBtn.disabled = true;
         forwardBtn.disabled = true;
+
+        searchObj.startPage = searchObj.page;
+        const dataPage = target.getAttribute('data-page');
+        if (dataPage) {
+            searchObj.page = Number(dataPage);
+        }
     }),
+    map((objValAndTarget) => objValAndTarget.v),
     debounceTime(debounceTimeVaring),
     filter(v => v.trim()),
     switchMap(
         v => ajax({
-            url: url + v + '&per_page=' + per_page + '&page=' + searchObj.page,
+            url: url + v + '&per_page=' + per_page + '&page=' + searchObj.page + '&sort=stars',
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -53,23 +73,28 @@ const SearchPipe = (settings, objBtn) => (obs) => obs.pipe(
         .pipe(
             catchError(err => {
                 logicBtns({error: true});
-                if (objBtn.forward === true) {
-                    searchObj.forward--;
-                }
-                if (objBtn.back === true) {
-                    searchObj.forward++;
-                }
+                searchObj.page = searchObj.startPage;
                 return EMPTY;
             })
         )
     ),
     tap((response) => {
-        const total_count = response.response.total_count;
+        const total_count = response.response.total_count > 1000 ? 1000 : response.response.total_count;
+
         const per_page_max = Math.ceil(total_count / per_page);
         logicBtns(false, per_page_max);
         
+        if (searchObj.startValue === searchObj.value) {
+            btn_paginator_numbers.innerHTML = '';
+            addPaginatorNumberBtns(per_page_max, total_count);
+        }
+        
+
         // console.log('total_count', total_count);
         // console.log('per_page_max', per_page_max);
+        delete searchObj.startPage;
+        delete searchObj.startValue;
+        delete searchObj.wereAdedBtns;
         localStorage.setItem('searchLocalStorage', JSON.stringify(searchObj));
     }),
     map(response => response.response.items),
@@ -87,20 +112,12 @@ stream$.subscribe(value => {
 
 fromEvent(forwardBtn, 'click')
     .pipe(
-        tap(() => {
-            searchObj.page++;
-            forwardBtn.disabled = true;
-        }),
-        SearchPipe(false, {forward: true})
+        SearchPipe(false)
     ).subscribe(v => subscribeStream(v));
 
 fromEvent(backBtn, 'click')
     .pipe(
-        tap(() => {
-            searchObj.page--;
-            backBtn.disabled = true;
-        }),
-        SearchPipe(false, {back: true})
+        SearchPipe(false)
     ).subscribe(v => subscribeStream(v));
 
 if (localStorage.getItem('searchLocalStorage')) {
@@ -111,10 +128,10 @@ if (localStorage.getItem('searchLocalStorage')) {
 
 function logicBtns(objError, per_page_max) {
     if (objError.error === true) {
-        backBtn.disabled = false;
-        forwardBtn.disabled = false;
         return false;
     }
+    backBtn.setAttribute('data-page', searchObj.page - 1);
+    forwardBtn.setAttribute('data-page', searchObj.page + 1);
     if (searchObj.page > 1) {
         backBtn.disabled = false;
     }
@@ -124,12 +141,13 @@ function logicBtns(objError, per_page_max) {
 }
 
 import stargazersIcon from './../img/star.svg';
-console.log(stargazersIcon);
 
 function subscribeStream(val) {
     const user = val.owner;
     const stargazers_count = val.stargazers_count;
-    const html = `
+    const pushed_at = Date.parse(val.pushed_at);
+    const date_last_commit = formatDate(new Date(pushed_at));
+    const cardHTML = `
         <div class="card">
             <div class="card-image">
                 <img src="${user.avatar_url}">
@@ -137,58 +155,75 @@ function subscribeStream(val) {
             </div>
             <div class="card-action">
                 <a href="${val.html_url}" target="_blank">Открыть github</a>
+                <div class="card-action-info">
+                    <div class="card-action-info__item">
+                        <div class="card-action-info__item-left">
+                            <img src="${stargazersIcon}">
+                        </div>
+                        <div class="card-action-info__item-count">
+                            ${stargazers_count}
+                        </div>
+                    </div>
+                    <div class="card-action-info__item">
+                        <div class="card-action-info__item-left">
+                            Last commit
+                        </div>
+                        <div class="card-action-info__item-count">
+                            ${date_last_commit}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>`;
     
-    console.log(val);
-    const pushed_at = Date.parse(val.pushed_at);
-    const date = formatDate(new Date(pushed_at));
-    console.log(date);
-    result.insertAdjacentHTML('beforeend', html);
+    // console.log(val);
+    result.insertAdjacentHTML('beforeend', cardHTML);
 }
 
 
 function formatDate(date) {
 
-    var dd = date.getDate();
+    let dd = date.getDate();
     if (dd < 10) dd = '0' + dd;
   
-    var mm = date.getMonth() + 1;
+    let mm = date.getMonth() + 1;
     if (mm < 10) mm = '0' + mm;
   
-    var yy = date.getFullYear();
+    let yy = date.getFullYear();
     if (yy < 10) yy = '0' + yy;
   
     return dd + '.' + mm + '.' + yy;
 }
 
-// const stream$ = fromEvent(search, 'input')
-//     .pipe(
-//         map(e => e.target.value),
-//         debounceTime(1000),
-//         distinctUntilChanged(),
-//         tap(() => result.innerHTML = ''),
-//         filter(v => v.trim()),
-//         switchMap(v => ajax.getJSON(url + v)
-//             .pipe(
-//                 catchError(err => EMPTY)
-//             )    
-//         ),
-//         map(response => response.items),
-//         mergeMap(items => items)
-//     );
+function addPaginatorNumberBtns(per_page_max, total_count) {
 
-// stream$.subscribe(user => {
-    // const html = `
-    // <div class="card">
-    //     <div class="card-image">
-    //         <img src="${user.avatar_url}">
-    //         <span class="card-title">${user.login}</span>
-    //     </div>
-    //     <div class="card-action">
-    //         <a href="${user.html_url}" target="_blank">Открыть github</a>
-    //     </div>
-    // </div>`;
+    function appendBtn(i) {
+        const activeBtn = searchObj.page === i;
+        const btnPaginatorHTML = document.createElement('button');
+        btnPaginatorHTML.classList.add('btn', 'btn_number');
+        if (activeBtn) {
+            btnPaginatorHTML.classList.add('active');
+        }
+        btnPaginatorHTML.disabled = activeBtn === true ? 'disabled' : '';
+        btnPaginatorHTML.setAttribute('data-page', i);
+        btnPaginatorHTML.innerHTML = i;
 
-//     result.insertAdjacentHTML('beforeend', html);
-// });
+        btn_paginator_numbers.append(btnPaginatorHTML);
+        fromEvent(btnPaginatorHTML, 'click')
+            .pipe(
+                SearchPipe(false)
+            )
+            .subscribe((val) => subscribeStream(val));
+    }
+
+    if (per_page_max < 7 && per_page_max > 2) { //
+        for (let i = 1; i < per_page_max + 1; i++) {
+            appendBtn(i);
+        }
+    } else {
+        console.log(1);
+        for (let i = 1; i < per_page_max + 1; i++) {
+            appendBtn(i);
+        }
+    }
+}
