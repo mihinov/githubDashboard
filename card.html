@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    outline: none;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+}
+
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+body {
+    padding: 3rem 0;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    pointer-events: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+.card {
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),
+                0 3px 1px -2px rgba(0,0,0,0.12),
+                0 1px 5px 0 rgba(0,0,0,0.2);
+    width: 100%;
+    overflow-x: hidden;
+    max-width: 400px;
+}
+
+.card:not(:last-child) {
+    margin-bottom: 60px;
+}
+
+.card-image {
+    position: relative;
+    overflow: hidden;
+    display: block;
+}
+
+.card-image::before {
+    position: absolute;
+    display: block;
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgb(255, 255, 255, 0), rgba(0, 0, 0, 0.9));
+    opacity: 0.6;
+}
+
+.card-image img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+.card-title {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    color: white;
+    font-size: 36px;
+    display: block;
+}
+
+.card-action {
+    padding: 20px;
+}
+
+.card-action > a {
+    --color: #26a69a;
+    color: var(--color);
+    font-weight: bold;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.card-action > a::before {
+    position: absolute;
+    display: block;
+    content: '';
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform-origin: left;
+    background-color: var(--color);
+    transition: transform 0.3s ease-out;
+}
+
+.card-action > a:hover::before {
+    transform: scaleX(0);
+}
+
+.card-action-info {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.card-action-info__item {
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    border: 1px solid rgba(27, 31, 35, 0.15);
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.75);
+    margin-bottom: 20px;;
+}
+
+.card-action-info__item:not(:last-child) {
+    margin-right: 20px;
+}
+
+.card-action-info__item-left {
+    padding: 5px 10px;
+    border-right: 2px solid rgba(27, 31, 35, 0.15);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.card-action-info__item-left > img {
+    min-width: 25px;
+    min-height: 25px;
+}
+
+.card-action-info__item-count {
+    padding: 5px 10px;
+}
+
+#result {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 400px) {
+    .card-title {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 320px) {
+    .card-action-info__item:nth-child(2) {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .card-action-info__item:nth-child(2) .card-action-info__item-left {
+        border-right: none;
+        border-bottom: 2px solid rgba(27, 31, 35, 0.15);
+    }
+}
+
+.card-action-info__item-left:last-child {
+    border-right: none;
+}
+
+.btn[disabled] {
+    pointer-events: none;
+	background-color: #DFDFDF !important;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	color: #9F9F9F !important;
+	cursor: default;
+}
+
+.btn {
+    display: inline-block;
+    letter-spacing: .5px;
+    text-align: center;
+    padding: 7px 14px;
+    background-color: #26a69a;
+    color: white;
+    border-radius: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    -webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+    user-select: none;
+    font-size: 16px;
+    transition: background-color .3s ease-out;
+}
+
+.btn:hover {
+    background-color: #2bbbad;
+}
+
+.card-action {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.card-action-info__item:nth-child(n+3) {
+    padding: 7px 7px;
+}
+
+#result > * {
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+#result > *:not(:last-child) {
+    margin-bottom: 40px;
+}
+
+.contributor:not(:last-child) {
+    margin-bottom: 20px;
+}
+
+.contributors__title {
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.contributor {
+    max-width: 100px;
+    margin: 10px;
+    position: relative;
+    border: 4px solid transparent;
+    transition: 0.2s border-color ease-out;
+}
+
+.contributors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.contributor::before {
+    position: absolute;
+    content: '';
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 1);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+.contributor:hover::before {
+    opacity: 0.5;
+}
+
+.contributor:hover {
+    border-color: #26a69a;
+}
+
+
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <a href="/" class="btn">Вернуться к поиску</a>
+        <div id="result">
+
+        </div>
+
+    </div>
+
+    <script src="card.js"></script>
+</body>
+</html>
