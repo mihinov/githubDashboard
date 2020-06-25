@@ -84,10 +84,10 @@ const SearchPipe = (settings) => (obs) => obs.pipe(
         const per_page_max = Math.ceil(total_count / per_page);
         logicBtns(false, per_page_max);
         
-        if (searchObj.startValue === searchObj.value) {
+        // if (searchObj.startValue === searchObj.value) {
             btn_paginator_numbers.innerHTML = '';
             addPaginatorNumberBtns(per_page_max, total_count);
-        }
+        // }
         
 
         // console.log('total_count', total_count);
@@ -146,7 +146,7 @@ function subscribeStream(val) {
     const user = val.owner;
     const stargazers_count = val.stargazers_count;
     const pushed_at = Date.parse(val.pushed_at);
-    const date_last_commit = formatDate(new Date(pushed_at));
+    const date_last_commit = !isNaN(pushed_at) ? formatDate(new Date(pushed_at)) : 'No';
     const cardHTML = `
         <div class="card">
             <div class="card-image">
@@ -178,6 +178,12 @@ function subscribeStream(val) {
     
     // console.log(val);
     result.insertAdjacentHTML('beforeend', cardHTML);
+    let card_image = [...result.querySelectorAll('.card .card-image')];
+    card_image = card_image[card_image.length - 1];
+    card_image.addEventListener('click', () => {
+        localStorage.setItem('repos-in-user-github', JSON.stringify(val));
+        window.location.href = '/card.html';
+    });
 }
 
 
@@ -197,10 +203,16 @@ function formatDate(date) {
 
 function addPaginatorNumberBtns(per_page_max, total_count) {
 
-    function appendBtn(i) {
+    function appendBtn(i, ellipsis) {
         const activeBtn = searchObj.page === i;
         const btnPaginatorHTML = document.createElement('button');
         btnPaginatorHTML.classList.add('btn', 'btn_number');
+        if (ellipsis === true) {
+            btnPaginatorHTML.innerHTML = '...';
+            btnPaginatorHTML.disabled = true;
+            btn_paginator_numbers.append(btnPaginatorHTML);
+            return false;
+        }
         if (activeBtn) {
             btnPaginatorHTML.classList.add('active');
         }
@@ -222,29 +234,37 @@ function addPaginatorNumberBtns(per_page_max, total_count) {
         }
     } else {
         appendBtn(1);
-        appendBtn(2);
 
-        if (searchObj.page < 6) {
+        if (searchObj.page < 7) {
+            appendBtn(2);
             appendBtn(3);
             appendBtn(4);
             appendBtn(5);
             appendBtn(6);
             appendBtn(7);
-        } else if (searchObj.page <= 96) {
+            appendBtn(8);
+            appendBtn(searchObj.page, true);
+        } else if (searchObj.page < 95) {
+            appendBtn(searchObj.page, true);
+            appendBtn(searchObj.page - 3);
             appendBtn(searchObj.page - 2);
             appendBtn(searchObj.page - 1);
             appendBtn(searchObj.page);
             appendBtn(searchObj.page + 1);
             appendBtn(searchObj.page + 2);
+            appendBtn(searchObj.page + 3);
+            appendBtn(searchObj.page, true);
         } else {
+            appendBtn(searchObj.page, true);
+            appendBtn(per_page_max - 7);
             appendBtn(per_page_max - 6);
             appendBtn(per_page_max - 5);
             appendBtn(per_page_max - 4);
             appendBtn(per_page_max - 3);
             appendBtn(per_page_max - 2);
+            appendBtn(per_page_max - 1);
         }
 
-        appendBtn(per_page_max - 1);
         appendBtn(per_page_max);
 
     }
