@@ -216,14 +216,36 @@ function addPaginatorNumberBtns(per_page_max, total_count) {
             .subscribe((val) => subscribeStream(val));
     }
 
-    if (per_page_max < 7 && per_page_max > 2) { //
+    if (per_page_max < 9 && per_page_max > 2) { //
         for (let i = 1; i < per_page_max + 1; i++) {
             appendBtn(i);
         }
     } else {
-        console.log(1);
-        for (let i = 1; i < per_page_max + 1; i++) {
-            appendBtn(i);
+        appendBtn(1);
+        appendBtn(2);
+
+        if (searchObj.page < 6) {
+            appendBtn(3);
+            appendBtn(4);
+            appendBtn(5);
+            appendBtn(6);
+            appendBtn(7);
+        } else if (searchObj.page <= 96) {
+            appendBtn(searchObj.page - 2);
+            appendBtn(searchObj.page - 1);
+            appendBtn(searchObj.page);
+            appendBtn(searchObj.page + 1);
+            appendBtn(searchObj.page + 2);
+        } else {
+            appendBtn(per_page_max - 6);
+            appendBtn(per_page_max - 5);
+            appendBtn(per_page_max - 4);
+            appendBtn(per_page_max - 3);
+            appendBtn(per_page_max - 2);
         }
+
+        appendBtn(per_page_max - 1);
+        appendBtn(per_page_max);
+
     }
 }
