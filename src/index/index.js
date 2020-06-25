@@ -17,7 +17,7 @@ let searchObj = {
     value: ''
 };
 const per_page = 10;
-const debounceTimeVaring = 2000;
+const debounceTimeVaring = 1000;
 
 const searchLocaleStorage = JSON.parse(localStorage.getItem('searchLocalStorage'));
 if (localStorage.getItem('searchLocalStorage')) {
@@ -34,10 +34,6 @@ const SearchPipe = (settings) => (obs) => obs.pipe(
     tap((objValAndTarget) => {
         const v = objValAndTarget.v;
         const target = objValAndTarget.target;
-
-        if (v === '') {
-            return false;
-        }
 
         result.innerHTML = '';
 
@@ -56,6 +52,11 @@ const SearchPipe = (settings) => (obs) => obs.pipe(
         }
         backBtn.disabled = true;
         forwardBtn.disabled = true;
+
+        if (v === '') {
+            topPopularRepositories();
+            return false;
+        }
 
         searchObj.startPage = searchObj.page;
         const dataPage = target.getAttribute('data-page');
@@ -272,4 +273,35 @@ function addPaginatorNumberBtns(per_page_max, total_count) {
         appendBtn(per_page_max);
 
     }
+}
+
+function topPopularRepositories() {
+    setTimeout(() => {
+
+        ajax.getJSON('https://github-trending-api.now.sh/repositories?language=&since=daily')
+        .pipe(
+            tap((v) => {
+                searchObj.value = search.value;
+                localStorage.setItem('searchLocalStorage', JSON.stringify(searchObj));
+            }),
+            map(v => v.slice(0, 10)),
+            mergeMap(val => val)
+        )
+        .subscribe((val) => {
+            const cardHTML = `
+                <div class="card">
+                    <div class="card-image">
+                        <img src="${val.avatar}">
+                        <span class="card-title">${val.name}</span>
+                    </div>
+                    <div class="card-action">
+                        <a href="${val.url}" target="_blank">Открыть github</a>
+                    </div>
+                </div>`;
+            
+            // console.log(val);
+            result.insertAdjacentHTML('beforeend', cardHTML);
+        });
+
+    }, 500);
 }
