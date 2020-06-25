@@ -34,7 +34,11 @@ const SearchPipe = (settings) => (obs) => obs.pipe(
     tap((objValAndTarget) => {
         const v = objValAndTarget.v;
         const target = objValAndTarget.target;
-        console.clear();
+
+        if (v === '') {
+            return false;
+        }
+
         result.innerHTML = '';
 
         const btn_numbers = [...document.querySelectorAll('.btn.btn_number')];
@@ -228,7 +232,7 @@ function addPaginatorNumberBtns(per_page_max, total_count) {
             .subscribe((val) => subscribeStream(val));
     }
 
-    if (per_page_max < 9 && per_page_max > 2) { //
+    if (per_page_max < 9) { //
         for (let i = 1; i < per_page_max + 1; i++) {
             appendBtn(i);
         }

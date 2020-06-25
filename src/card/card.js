@@ -21,7 +21,9 @@ function formatDate(date) {
 import stargazersIcon from './../img/star.svg';
 
 function sendGetRequest(url) {
-	return fetch(url).then(response => response.json());
+    return fetch(url)
+        .then(response => response.json())
+        .catch((err) => console.log('error: ', err))
 }
 
 let objGit = {
@@ -29,22 +31,26 @@ let objGit = {
     contributors: false
 };
 
-if (reposGithub) {
-    sendGetRequest(reposGithub.languages_url)
-    .then((res) => {
-        objGit.languages = res;
-        if (objGit.languages !== false && objGit.contributors !== false) {
-            addCard(objGit);
-        }     
-    });
-    sendGetRequest(reposGithub.contributors_url)
-    .then((res) => {
-        objGit.contributors = res;
-        if (objGit.languages !== false && objGit.contributors !== false) {
-            addCard(objGit);
-        }     
-    });
-}
+setTimeout(() => {
+
+    if (reposGithub) {
+        sendGetRequest(reposGithub.languages_url)
+        .then((res) => {
+            objGit.languages = res;
+            if (objGit.languages !== false && objGit.contributors !== false) {
+                addCard(objGit);
+            }     
+        });
+        sendGetRequest(reposGithub.contributors_url)
+        .then((res) => {
+            objGit.contributors = res;
+            if (objGit.languages !== false && objGit.contributors !== false) {
+                addCard(objGit);
+            }     
+        });
+    }
+
+}, 1000);
 
 function addCard(objGit) {
     const languagesUrl = objGit.languages;
